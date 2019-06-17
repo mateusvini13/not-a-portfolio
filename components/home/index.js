@@ -57,7 +57,9 @@ function init(){
   geometry = new THREE.BoxGeometry( 1, 1, 1 );
   material = new THREE.MeshLambertMaterial( { color: 0xeb56c3, shading: THREE.FlatShading } );
 
-  cube = new THREE.Mesh( geometry, material );
+  cube = new THREE.Mesh( geometry, material )
+  cube.position.y = 0.5;
+
   scene.add( cube );
 
   createLights();
