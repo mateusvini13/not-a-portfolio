@@ -1,6 +1,6 @@
 //Creates Scene
-var HEIGHT, WIDTH
-var scene, camera, renderer
+var HEIGHT, WIDTH, camFactor = 150
+var scene, camera, renderer, then = 0
 var cube, ghostScene, geometry, spoopy, materials = []
 
 //Set canvas ratio when rendering
@@ -12,14 +12,14 @@ var textureLoader = new THREE.TextureLoader();
 //Suit
 var spoopyTexture = textureLoader.load('../../textures/spoopy/spoopy.png');
 spoopyTexture.flipY = false;
-spoopyTexture.anisotropy = 8;
+spoopyTexture.anisotropy = 4;
 var spoopyMaterial = new THREE.MeshPhongMaterial( { map: spoopyTexture } )
 materials["Spoopy"] = spoopyMaterial;
 
 //hat
 var hatTexture = textureLoader.load('../../textures/spoopy/hat.png');
 hatTexture.flipY = false;
-hatTexture.anisotropy = 8;
+hatTexture.anisotropy = 4;
 var hatMaterial = new THREE.MeshPhongMaterial( { map: hatTexture } )
 materials["Hat"] = hatMaterial;
 
@@ -46,19 +46,27 @@ function createLights() {
 
 //Resize Window
 function onWindowResize() {
-  var newWidth = ogWidth/window.innerWidth
-  var newHeigth = ogHeight/window.innerHeight
-  spoopy.scale.set(newWidth, newHeigth, newWidth)
-
-  camera.aspect = window.innerWidth / window.innerHeight
-  camera.updateProjectionMatrix()
-  renderer.setSize(window.innerWidth, window.innerHeight)
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.left = -window.innerWidth / camFactor;
+  camera.right = window.innerWidth / camFactor;
+  camera.top = window.innerHeight / camFactor;
+  camera.bottom = -window.innerHeight / camFactor;
+  camera.updateProjectionMatrix();
 }
 
 //Renders screen
-function animate() {
-	requestAnimationFrame( animate )
+function animate(now) {
 
+  //log FPS
+  now *= 0.001  // convert to seconds
+  const deltaTime = now - then
+  then = now
+  console.log((1 / deltaTime).toFixed(1))
+
+	requestAnimationFrame(animate)
+
+  // cube.rotation.x += 0.01
+  // cube.rotation.y += 0.01
   spoopy.rotation.y += 0.01
 	renderer.render(scene, camera)
 }
@@ -76,19 +84,24 @@ function loadGhost(){
     });
 
     spoopy = ghostScene.getObjectByName("SpoopyArmature")
-    console.log(spoopy)
-
-    ogWidth = window.innerWidth * 75
-    ogHeight = window.innerHeight * 75
-
-    spoopy.scale.set(75, 75, 75)
+    spoopy.scale.set(1, 1, 1)
     scene.add(spoopy)
-    spoopy.position.y = 60;
+    // spoopy.position.y = 30;
 
-    animate()
+    animate(0)
   }, undefined, function (error) {
     console.error(error)
   })
+}
+
+//Render Cube
+function renderCube(){
+  geometry = new THREE.IcosahedronGeometry(10, 0)
+  material = new THREE.MeshPhongMaterial({color: 0x120315, flatShading: true})
+
+  cube = new THREE.Mesh( geometry, material)
+  scene.add(cube)
+  animate(0)
 }
 
 function init(){
@@ -97,7 +110,7 @@ function init(){
   var height = window.innerHeight;
   
   // camera = new THREE.PerspectiveCamera( 100, window.innerWidth / window.innerHeight, 0.1, 1000 )
-  camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / -2, -500, 500 )
+  camera = new THREE.OrthographicCamera( width / -camFactor, width / camFactor, height / camFactor, height / -camFactor, -500, 500 )
   renderer = new THREE.WebGLRenderer({alpha: true, antialias: true })
 
   renderer.setSize( window.innerWidth, window.innerHeight )
@@ -110,6 +123,8 @@ function init(){
   window.addEventListener('resize', onWindowResize, false)
 
   loadGhost()
+  //renderCube()
+
   createLights()
   camera.position.z = 5
 }
