@@ -1,7 +1,7 @@
 //Creates Scene
 var HEIGHT, WIDTH
 var scene, camera, renderer
-var cube, ghostScene, geometry, materials = []
+var cube, ghostScene, geometry, spoopy, materials = []
 
 //Set canvas ratio when rendering
 var scaleX, scaleY
@@ -48,7 +48,7 @@ function createLights() {
 function onWindowResize() {
   var newWidth = ogWidth/window.innerWidth
   var newHeigth = ogHeight/window.innerHeight
-  ghostScene.scale.set(newWidth, newHeigth, newWidth)
+  spoopy.scale.set(newWidth, newHeigth, newWidth)
 
   camera.aspect = window.innerWidth / window.innerHeight
   camera.updateProjectionMatrix()
@@ -59,7 +59,7 @@ function onWindowResize() {
 function animate() {
 	requestAnimationFrame( animate )
 
-  ghostScene.rotation.y += 0.01
+  spoopy.rotation.y += 0.01
 	renderer.render(scene, camera)
 }
 
@@ -69,19 +69,21 @@ function loadGhost(){
 
   loader.load('../../models/spoopy.glb', function ( ghost ) {
     ghostScene = ghost.scene
-
     ghostScene.traverse((o) => {
       if (o.isMesh) {
         o.material = materials[o.name];
       }
     });
 
+    spoopy = ghostScene.getObjectByName("SpoopyArmature")
+    console.log(spoopy)
+
     ogWidth = window.innerWidth * 75
     ogHeight = window.innerHeight * 75
-    ghostScene.scale.set(75, 75, 75)
 
-    scene.add(ghostScene)
-    ghostScene.position.y = 60;
+    spoopy.scale.set(75, 75, 75)
+    scene.add(spoopy)
+    spoopy.position.y = 60;
 
     animate()
   }, undefined, function (error) {
